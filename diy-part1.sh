@@ -21,4 +21,4 @@ echo 'src-git packages https://github.com/coolsnowwolf/packages' >>feeds.conf.de
 echo 'src-git luci https://github.com/coolsnowwolf/luci' >>feeds.conf.default
 echo 'src-git routing https://github.com/coolsnowwolf/routing' >>feeds.conf.default
 echo 'src-git telephony https://github.com/coolsnowwolf/telephony.git' >>feeds.conf.default
-echo 'src-git oldpackages http://git.openwrt.org/packages.git' >>feeds.conf.default
+echo '#src-git oldpackages http://git.openwrt.org/packages.git' >>feeds.conf.default
