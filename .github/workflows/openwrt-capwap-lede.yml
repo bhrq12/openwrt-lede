@@ -72,7 +72,7 @@ jobs:
     - name: openwrt CAPWAP
       run: |
         cd openwrt
-        git clone https://github.com/bhrq12/openCAPWAP-OpenWRT.git package/openwrt-capwap
+        git clone https://github.com/bhrq12/openwrt-capwap.git package/openwrt-capwap
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
