@@ -11,7 +11,7 @@
 		led-failsafe = &status;
 		led-running = &status;
 		led-upgrade = &status;
-		label-mac-device = &gmac0;
+		// label-mac-device = &gmac0;
 	};
 
 	chosen {
