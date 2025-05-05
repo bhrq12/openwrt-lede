@@ -89,15 +89,18 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        ##====================##
-        [ -e $BTS_1 ] && mv $BTS_1 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220.dtsi
-        [ -e $BTS_2 ] && mv $BTS_2 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220-48m.dts
-        [ -e $BTS_3 ] && mv $BTS_3 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220-128m.dts
-        [ -e $MK_1 ] && mv $MK_1 openwrt/target/linux/ipq40xx/image/generic.mk
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
+    - name: MV file
+      run: |
+        [ -e files ] && mv files openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/files
+        [ -e $BTS_1 ] && mv $BTS_1 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220.dtsi
+        [ -e $BTS_2 ] && mv $BTS_2 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220-48m.dts
+        [ -e $BTS_3 ] && mv $BTS_3 openwrt/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4018-ap4220-128m.dts
+        [ -e $MK_1 ] && mv $MK_1 openwrt/target/linux/ipq40xx/image/generic.mk
+        
     - name: Download package
       id: package
       run: |
