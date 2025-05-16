@@ -10,7 +10,7 @@
 # See /LICENSE for more information.
 #
 
-name: OpenWrt AP4220
+name: AP4220 Plus OpenWrt
 
 on:
   repository_dispatch:
