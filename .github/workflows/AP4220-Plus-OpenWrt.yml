@@ -26,6 +26,7 @@ env:
   UPLOAD_BIN_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
+  SSH_ACTIONS: true  # 启用SSH连接
   TZ: Asia/Shanghai
 
 jobs:
