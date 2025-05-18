@@ -18,7 +18,7 @@ on:
 
 env:
   REPO_URL: https://github.com/bhrq12/lede.git
-  REPO_BRANCH: v2025.5.17
+  REPO_BRANCH: v2025.5.18
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: configs/ap4220-plus-1.config
   DIY_P1_SH: diy-script-1.sh
