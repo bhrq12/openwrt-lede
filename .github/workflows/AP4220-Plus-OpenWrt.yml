@@ -26,7 +26,7 @@ env:
   UPLOAD_BIN_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
-  # SSH_ACTIONS: true  # 启用SSH连接
+  SSH_ACTIONS: true  # 启用SSH连接
   TZ: Asia/Shanghai
 
 jobs:
@@ -89,8 +89,8 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
         
-    # - name: SSH connection to Actions
-    #   uses: mxschmitt/action-tmate@v3
+    - name: SSH connection to Actions
+      uses: mxschmitt/action-tmate@v3
 
     - name: Download package
       id: package
