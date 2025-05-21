@@ -28,8 +28,8 @@
 # rm -rf feeds/luci/applications/luci-app-serverchan
 
 # 添加额外插件
-git clone https://github.com/bhrq12/package.git package/mypackage
-git clone https://github.com/bhrq12/luci-app-baidupcs-web.git package/luci-app-baidupcs-web
+# git clone https://github.com/bhrq12/package.git package/mypackage
+# git clone https://github.com/bhrq12/luci-app-baidupcs-web.git package/luci-app-baidupcs-web
 
 # 更改 Argon 主题背景
 # cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
@@ -43,7 +43,7 @@ git clone https://github.com/bhrq12/luci-app-baidupcs-web.git package/luci-app-b
 # cp -f $GITHUB_WORKSPACE/scripts/011-fix-mbo-modules-build.patch package/network/services/hostapd/patches/011-fix-mbo-modules-build.patch
 
 # 取消主题默认设置
-find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
+# find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
