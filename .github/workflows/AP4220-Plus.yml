@@ -83,6 +83,13 @@ jobs:
         
       - name: SSH connection to Actions
         uses: mxschmitt/action-tmate@v3
+        
+      - name: 安装软件源
+        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+        run: |
+          cd $OPENWRT_PATH
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: 工具链哈希比对
         id: hash
@@ -95,13 +102,6 @@ jobs:
           if [ -z "$CACHE_HASH" ] || [ "$CURRENT_HASH" != "$CACHE_HASH" ]; then
             echo "REBUILD_TOOLCHAIN=true" >> $GITHUB_OUTPUT
           fi
-            
-      - name: 安装软件源
-        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
-        run: |
-          cd $OPENWRT_PATH
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
   
       - name: 编译基础工具
         if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
