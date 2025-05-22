@@ -51,7 +51,7 @@ jobs:
         run: |
           sudo rm -rf /etc/apt/sources.list.d/*
           sudo -E apt-get -qq update
-          sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) clang g++
+          sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) clang g++ bc lm-sensors pciutils jq bash coreutils wget-ssl libpam-dev libpcre2-dev libselinux1 policycoreutils gperf libunistring-dev libxml2-dev liblzma-dev libaio-dev
           sudo timedatectl set-timezone "$TZ"
 
       - name: 克隆源代码
