@@ -24,6 +24,7 @@ env:
   FIRMWARE_TAG: ROOTFS_PLUS
   OPENWRT_RELEASE: true
   OPENWRT_TAG: AP4220_PLUS
+  SSH_ACTIONS: true  # 启用SSH连接
   TZ: Asia/Shanghai
   SAFE_DIRECTORY: ${{ github.workspace }}
 
@@ -79,6 +80,9 @@ jobs:
           echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '"' '{print $2}')" >> $GITHUB_OUTPUT
           echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '"' '{print $2}')" >> $GITHUB_OUTPUT
           echo "TOOLCHAIN_IMAGE=toolchain-$(basename $SOURCE_URL .git)-$SOURCE_BRANCH-$DEVICE_TARGET-$DEVICE_SUBTARGET" >> $GITHUB_OUTPUT
+        
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
 
       - name: 工具链哈希比对
         id: hash
