@@ -10,7 +10,7 @@ name: AP4220 Plus
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 20 * * *
+    # - cron: 0 20 * * *
 
 env:
   SOURCE_URL: https://github.com/bhrq12/lede.git
