@@ -1,10 +1,9 @@
-#===============================================
+#===============================================================
 # Description: Build OpenWrt
-# File name: build-openwrt.yml
-# Lisence: MIT
-# Author: P3TERX
-# https://github.com/P3TERX
-#===============================================
+# File name: AP4220-Plus-OpenWrt.yml
+# Author: BHRQ12
+# https://github.com/BHRQ12
+#===============================================================
 
 name: AP4220 Plus
 
@@ -26,6 +25,7 @@ env:
   OPENWRT_RELEASE: true
   OPENWRT_TAG: AP4220_PLUS
   TZ: Asia/Shanghai
+  SAFE_DIRECTORY: ${{ github.workspace }}
 
 jobs:
   Toolchain:
@@ -38,10 +38,13 @@ jobs:
       DEVICE_TARGET: ${{ steps.env.outputs.DEVICE_TARGET }}
       DEVICE_SUBTARGET: ${{ steps.env.outputs.DEVICE_SUBTARGET }}
       TOOLCHAIN_IMAGE: ${{ steps.env.outputs.TOOLCHAIN_IMAGE }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@main
-
+        with:
+          safe-directory: ${{ env.SAFE_DIRECTORY }}
+ 
       - name: 初始化编译环境
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -286,7 +289,7 @@ jobs:
       run: |
         cd $OPENWRT_PATH
         make -j$(nproc) || make -j1 V=s
-        
+
     - name: 检查空间使用情况
       if: always()
       run: |
