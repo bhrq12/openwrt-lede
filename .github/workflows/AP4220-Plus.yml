@@ -58,6 +58,7 @@ jobs:
       - name: 克隆源代码
         id: clone
         run: |
+          df -hT $GITHUB_WORKSPACE
           git clone $SOURCE_URL -b $SOURCE_BRANCH workspace/openwrt
           cd workspace/openwrt
           echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
@@ -122,7 +123,8 @@ jobs:
       - name: 生成工具链镜像
         if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
         run: |
-          cd workspace
+          df -hT $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/workspace
           mksquashfs openwrt $TOOLCHAIN_IMAGE -force-gid 1001 -force-uid 1001 -comp zstd
           mkdir -p $GITHUB_WORKSPACE/output
           split -d -b 1900M $TOOLCHAIN_IMAGE $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.img.
