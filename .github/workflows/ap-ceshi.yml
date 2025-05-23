@@ -1,0 +1,155 @@
+#===============================================================
+# Description: Build OpenWrt
+# File name: AP4220-Plus-OpenWrt.yml
+# Author: BHRQ12
+# https://github.com/BHRQ12
+#===============================================================
+
+name: AP4220 Plus
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: 0 20 * * *
+
+env:
+  SOURCE_URL: https://github.com/bhrq12/lede.git
+  SOURCE_BRANCH: v2025.5.22
+  CONFIG_FILE: configs/ap4220-plus-1.config
+  DIY_SCRIPT: diy-script-1.sh
+  TOOLCHAIN_TAG: Toolchain
+  CLASH_KERNEL: arm64
+  UPLOAD_BIN_DIR: false
+  FIRMWARE_RELEASE: true
+  FIRMWARE_TAG: ROOTFS_PLUS
+  OPENWRT_RELEASE: true
+  OPENWRT_TAG: AP4220_PLUS
+  # SSH_ACTIONS: true  # 启用SSH连接
+  TZ: Asia/Shanghai
+  SAFE_DIRECTORY: ${{ github.workspace }}
+
+jobs:
+  Toolchain:
+    runs-on: ubuntu-22.04
+    outputs:
+      OPENWRT_PATH: ${{ steps.clone.outputs.OPENWRT_PATH }}
+      VERSION_INFO: ${{ steps.clone.outputs.VERSION_INFO }}
+      CURRENT_BRANCH: ${{ steps.env.outputs.CURRENT_BRANCH }}
+      SOURCE_REPO: ${{ steps.env.outputs.SOURCE_REPO }}
+      DEVICE_TARGET: ${{ steps.env.outputs.DEVICE_TARGET }}
+      DEVICE_SUBTARGET: ${{ steps.env.outputs.DEVICE_SUBTARGET }}
+      TOOLCHAIN_IMAGE: ${{ steps.env.outputs.TOOLCHAIN_IMAGE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          safe-directory: ${{ env.SAFE_DIRECTORY }}
+ 
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /etc/apt/sources.list.d/*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) clang g++ bc lm-sensors pciutils jq bash coreutils libpam-dev libpcre2-dev libselinux1 policycoreutils gperf libunistring-dev libxml2-dev liblzma-dev libaio-dev
+          sudo timedatectl set-timezone "$TZ"
+
+      - name: 克隆源代码
+        id: clone
+        run: |
+          df -hT $GITHUB_WORKSPACE
+          git clone $SOURCE_URL -b $SOURCE_BRANCH openwrt
+          cd openwrt
+          echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+          echo "OPENWRT_PATH=$(echo $PWD)" >> $GITHUB_OUTPUT
+          echo "VERSION_INFO=$(git show -s --date=short --format='Author: %an<br/>date: %cd<br/>commit: %s<br/>commit hash: %H')" >> $GITHUB_OUTPUT
+
+      - name: 生成工具链配置
+        run: |
+          mv $CONFIG_FILE $OPENWRT_PATH/.config
+          echo "CONFIG_ALL=y" >> $OPENWRT_PATH/.config
+          echo "CONFIG_ALL_NONSHARED=y" >> $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH && make defconfig > /dev/null
+
+      - name: 生成环境变量
+        id: env
+        run: |
+          echo "CURRENT_BRANCH=$(git symbolic-ref --short HEAD)" >> $GITHUB_OUTPUT
+          cd $OPENWRT_PATH
+          echo "SOURCE_REPO=$(basename $SOURCE_URL .git)" >> $GITHUB_OUTPUT
+          echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '"' '{print $2}')" >> $GITHUB_OUTPUT
+          echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '"' '{print $2}')" >> $GITHUB_OUTPUT
+          echo "TOOLCHAIN_IMAGE=toolchain-$(basename $SOURCE_URL .git)-$SOURCE_BRANCH-$DEVICE_TARGET-$DEVICE_SUBTARGET" >> $GITHUB_OUTPUT
+
+      - name: 安装软件源
+        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+        run: |
+          cd $OPENWRT_PATH
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+        
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
+        
+      # - name: 工具链哈希比对
+      #   id: hash
+      #   run: |
+      #     cd $OPENWRT_PATH
+      #     export CURRENT_HASH=$(git log --pretty=tformat:"%H" -n1 tools toolchain)
+      #     echo "CURRENT_HASH is $CURRENT_HASH"
+      #     export CACHE_HASH=$(curl -fSsL https://github.com/$GITHUB_REPOSITORY/releases/download/$TOOLCHAIN_TAG/$TOOLCHAIN_IMAGE.hash || echo "")
+      #     echo "CACHE_HASH is $CACHE_HASH"
+      #     if [ -z "$CACHE_HASH" ] || [ "$CURRENT_HASH" != "$CACHE_HASH" ]; then
+      #       echo "REBUILD_TOOLCHAIN=true" >> $GITHUB_OUTPUT
+      #     fi
+  
+      # - name: 编译基础工具
+      #   if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+      #   run: |
+      #     cd $OPENWRT_PATH
+      #     make defconfig
+      #     echo -e "$(nproc) thread compile"
+      #     make tools/compile -j$(nproc) || make tools/compile -j1 V=s
+  
+      # - name: 编译完整工具链
+      #   if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+      #   run: |
+      #     cd $OPENWRT_PATH
+      #     echo -e "$(nproc) thread compile"
+      #     make toolchain/compile -j$(nproc) || make toolchain/compile -j1 V=s
+      #     rm -rf .config* dl bin
+
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
+      
+      - name: 生成工具链镜像
+        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+        run: |
+          mksquashfs openwrt $TOOLCHAIN_IMAGE -force-gid 1001 -force-uid 1001 -comp zstd
+          mkdir -p $GITHUB_WORKSPACE/output
+          split -d -b 1900M $TOOLCHAIN_IMAGE $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.img.
+          rm $TOOLCHAIN_IMAGE
+          echo $CURRENT_HASH > $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.hash
+          ls -lh $GITHUB_WORKSPACE/output
+        
+      - name: 编译工具链
+        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.TOOLCHAIN_TAG }}
+          assets: '${{ env.TOOLCHAIN_IMAGE }}.*'
+          fail-if-no-assets: false
+          fail-if-no-release: false
+
+      - name: 发布工具链
+        if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          name: Toolchain-Image
+          allowUpdates: true
+          tag: ${{ env.TOOLCHAIN_TAG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: output/*
+          body: OpenWrt 工具链镜像文件
