@@ -88,6 +88,9 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
+        
+    - name: SSH connection to Actions
+      uses: mxschmitt/action-tmate@v3
 
     - name: Download package
       id: package
@@ -97,9 +100,6 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-        
-    - name: SSH connection to Actions
-      uses: mxschmitt/action-tmate@v3
 
     - name: Compile the firmware
       id: compile
