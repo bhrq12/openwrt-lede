@@ -24,7 +24,7 @@ env:
   FIRMWARE_TAG: ROOTFS_PLUS
   OPENWRT_RELEASE: true
   OPENWRT_TAG: AP4220_PLUS
-  SSH_ACTIONS: true  # 启用SSH连接
+  # SSH_ACTIONS: true  # 启用SSH连接
   TZ: Asia/Shanghai
   SAFE_DIRECTORY: ${{ github.workspace }}
 
@@ -125,13 +125,16 @@ jobs:
         run: |
           df -hT $GITHUB_WORKSPACE
           cd $GITHUB_WORKSPACE/workspace
-          mksquashfs openwrt $TOOLCHAIN_IMAGE -force-gid 1001 -force-uid 1001 -comp zstd
+          mksquashfs $GITHUB_WORKSPACE/workspace/openwrt $TOOLCHAIN_IMAGE -force-gid 1001 -force-uid 1001 -comp zstd -verbose
           mkdir -p $GITHUB_WORKSPACE/output
           split -d -b 1900M $TOOLCHAIN_IMAGE $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.img.
           rm $TOOLCHAIN_IMAGE
           echo $CURRENT_HASH > $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.hash
           ls -lh $GITHUB_WORKSPACE/output
-          
+
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
+        
       - name: 编译工具链
         if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
         uses: mknejp/delete-release-assets@v1
