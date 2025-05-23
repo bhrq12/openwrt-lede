@@ -119,6 +119,9 @@ jobs:
           echo -e "$(nproc) thread compile"
           make toolchain/compile -j$(nproc) || make toolchain/compile -j1 V=s
           rm -rf .config* dl bin
+
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
   
       - name: 生成工具链镜像
         if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
@@ -129,9 +132,6 @@ jobs:
           rm $TOOLCHAIN_IMAGE
           echo $CURRENT_HASH > $GITHUB_WORKSPACE/output/$TOOLCHAIN_IMAGE.hash
           ls -lh $GITHUB_WORKSPACE/output
-
-      - name: SSH connection to Actions
-        uses: mxschmitt/action-tmate@v3
         
       - name: 编译工具链
         if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
