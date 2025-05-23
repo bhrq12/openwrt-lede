@@ -88,9 +88,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-        
-    - name: SSH connection to Actions
-      uses: mxschmitt/action-tmate@v3
 
     - name: Download package
       id: package
@@ -100,6 +97,9 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+        
+    - name: SSH connection to Actions
+      uses: mxschmitt/action-tmate@v3
 
     - name: Compile the firmware
       id: compile
@@ -147,6 +147,12 @@ jobs:
         [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
 
+    - name: Set FIRMWARE path
+      run: echo "FIRMWARE=$GITHUB_WORKSPACE/output" >> $GITHUB_ENV
+    
+    - name: Generate release body
+      run: echo "Release notes for firmware" > release.txt
+    
     - name: Upload firmware to release
       uses: softprops/action-gh-release@master
       if: steps.tag.outputs.status == 'success' && !cancelled()
