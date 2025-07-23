@@ -27,6 +27,7 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   SSH_ACTIONS: true  # 启用SSH连接
+  GITHUB_TOKEN: ${{ secrets.CUSTOM_TOKEN }}  # 使用自定义 Token
   TZ: Asia/Shanghai
 
 jobs:
@@ -143,11 +144,11 @@ jobs:
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware to release
-      uses: softprops/action-gh-release@v1  # 推荐用稳定版本 v1 而非 master
+      uses: ncipollo/release-action@v1   # 推荐用稳定版本 v1 而非 master   softprops/action-gh-release@v1
       # uses: softprops/action-gh-release@master
       if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: $GITHUB_TOKEN
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
@@ -166,4 +167,4 @@ jobs:
         keep_latest: 3
         delete_tags: true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: $GITHUB_TOKEN
